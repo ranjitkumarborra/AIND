@@ -10,6 +10,7 @@ boxes = cross(rows, cols)
 
 diagonal_units = [[r+c for r,c in zip(rows,cols)]]
 anti_diagonal_units = [[r+c for r,c in zip(rows,reversed(cols))]]
+
 row_units = [cross(r, cols) for r in rows]
 column_units = [cross(rows, c) for c in cols]
 square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
@@ -44,22 +45,30 @@ def naked_twins(values):
     """
 
     # Find all instances of naked twins
-    twin = []
-    for box in sorted(values.iterkeys()):
-        if(len(values[box]) == 2):
-            for p in sorted(peers[box]):
-                if box > p and values[p] == values[box]:
-                    twin.append(p), twin.append(box) #found twin
-                    break
+    two_val_boxes_before = 0
+    for box in boxes:
+        if len(values[box]) == 2:
+            ++two_val_boxes_before;
 
-    # Eliminate the naked twins as possibilities for their peers
-    for t in twin:
-        for p in peers[t]:
-            if values[p] != values[t]:
-                for c in values[t]:
-                    values[p].replace(c, '')
+    for square in unitlist:
+        for s in square:
+            if len(values[s])==2:
+                for match in square: #find a match...
+                    if match != s and values[match] == values[s]:
+                        for r in square:
+                            if s!=r and r!=match:
+                                for c in values[s]:
+                                    values[r] = values[r].replace(c, '')
 
-    return values
+
+    two_val_boxes_after = 0
+    for box in boxes:
+        if len(values[box]) == 2:
+            ++two_val_boxes_after;
+    if two_val_boxes_after != two_val_boxes_after:
+        return naked_twins(values)
+    else:
+        return values
 
 def grid_values(grid):
     """
@@ -103,7 +112,7 @@ def eliminate(values):
     for box in solved_values:
         digit = values[box]
         for peer in peers[box]:
-            values[peer] = values[peer].replace(digit, '')
+            assign_value(values, peer, values[peer].replace(digit, ''))
     return values
 
 def only_choice(values):
@@ -162,8 +171,32 @@ def solve(grid):
     return search(values)
 
 if __name__ == '__main__':
-    diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
-    display(solve(diag_sudoku_grid))
+    #diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    diag_sudoku_grid ='2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    #display(solve(diag_sudoku_grid))
+
+    before_naked_twins_1 = {"G7": "1234568", "G6": "9", "G5": "35678", "G4": "23678", "G3":
+        "245678", "G2": "123568", "G1": "1234678", "G9": "12345678", "G8":
+        "1234567", "C9": "13456", "C8": "13456", "C3": "4678", "C2": "68",
+        "C1": "4678", "C7": "13456", "C6": "368", "C5": "2", "A4": "5", "A9":
+        "2346", "A8": "2346", "F1": "123689", "F2": "7", "F3": "25689", "F4":
+        "23468", "F5": "1345689", "F6": "23568", "F7": "1234568", "F8":
+        "1234569", "F9": "1234568", "B4": "46", "B5": "46", "B6": "1", "B7":
+        "7", "E9": "12345678", "B1": "5", "B2": "2", "B3": "3", "C4": "9",
+        "B8": "8", "B9": "9", "I9": "1235678", "I8": "123567", "I1": "123678",
+        "I3": "25678", "I2": "123568", "I5": "35678", "I4": "23678", "I7":
+        "9", "I6": "4", "A1": "2468", "A3": "1", "A2": "9", "A5": "3468",
+        "E8": "12345679", "A7": "2346", "A6": "7", "E5": "13456789", "E4":
+        "234678", "E7": "1234568", "E6": "23568", "E1": "123689", "E3":
+        "25689", "E2": "123568", "H8": "234567", "H9": "2345678", "H2":
+        "23568", "H3": "2456789", "H1": "2346789", "H6": "23568", "H7":
+        "234568", "H4": "1", "H5": "35678", "D8": "1235679", "D9": "1235678",
+        "D6": "23568", "D7": "123568", "D4": "23678", "D5": "1356789", "D2":
+        "4", "D3": "25689", "D1": "123689"}
+    display(before_naked_twins_1)
+    print("************************after***********************\n")
+    display(naked_twins(before_naked_twins_1))
+
     try:
         from visualize import visualize_assignments
         visualize_assignments(assignments)
